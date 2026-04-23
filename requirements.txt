@@ -1,0 +1,50 @@
+# ── Web 与 通信 ──
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+sse-starlette==2.1.0
+requests==2.32.3
+httpx==0.27.0
+
+# ── 异步队列与缓存 ──
+celery==5.4.0
+redis==5.0.4
+flower==2.0.1
+eventlet>=0.36.1         # ✨ 新增：Celery 并发支持库
+
+# ── 数据库驱动 ──
+sqlalchemy==2.0.30
+asyncpg==0.29.0
+alembic==1.13.1
+psycopg2-binary>=2.9.9   # ✨ 新增：用于兼容同步操作或 Celery 的 DB backend
+qdrant-client==1.9.1
+
+# ── 基础大模型与 RAG 框架 ──
+llama-index>=0.10.43
+llama-index-vector-stores-qdrant
+llama-index-llms-openai
+llama-index-embeddings-openai
+openai==1.35.3
+
+# ── 🚀 新增：惟明 (WeightMind) 核心解析引擎 ──
+PyMuPDF>=1.23.0          # ✨ 新增：毫秒级读取 PDF 首页 (代码中的 fitz)
+llama-cloud>=0.0.6       # ✨ 新增：LlamaParse 云端高精度解析接入
+FlagEmbedding>=1.2.0     # ✨ 新增：BGE-M3 向量化与 BGE-Reranker 本地重排
+# marker-pdf==0.2.17     # 🛑 已弃用：已切换至云端高精解析，减轻服务器压力
+
+# ── 工具与配置管理 ──
+python-dotenv==1.0.1
+pydantic==2.7.4
+pydantic-settings==2.3.1
+loguru==0.7.2
+tenacity==8.3.0
+aiofiles==23.2.1
+python-magic==0.4.27
+
+# ── 前端展现 ──
+streamlit==1.35.0
+streamlit-extras==0.4.2
+
+# ── 测试组件 ──
+pytest==8.2.2
+pytest-asyncio==0.23.7

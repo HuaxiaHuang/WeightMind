@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  # ── 1. 基础设施层 (你原有的配置，保持不变) ──────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: sci_rag_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sci_rag}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sci_rag_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-sci_rag_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: sci_rag_qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: sci_rag_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # ── 2. 核心应用层 (✨ 新增：通过 Dockerfile 构建你的 Python 代码) ────
+  api:
+    build: .  # 指向当前目录的 Dockerfile
+    container_name: sci_rag_api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      # 这里可以补充你的其他环境变量，或直接让它读取 .env 文件
+    depends_on:
+      - postgres
+      - qdrant
+      - redis
+    restart: unless-stopped
+
+  celery_worker:
+    build: .
+    container_name: sci_rag_worker
+    command: celery -A worker.celery_app worker --loglevel=info
+    environment:
+      - ENVIRONMENT=production
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    build: .
+    container_name: sci_rag_frontend
+    command: streamlit run frontend/app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000  # ✨ 核心：在 Docker 网络内，直接用服务名 api 访问后端
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  redis_data:
